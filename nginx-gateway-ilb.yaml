@@ -1,0 +1,43 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: mynginx-gateway-ilb
+spec:
+  selector:
+    istio: ilbgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: mynginx
+spec:
+  host: mynginx
+  subsets:
+  - name: mynginx-v1
+    labels:
+      app: mynginx
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: mynginx
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - mynginx-gateway-ilb
+  http:
+  - route:
+    - destination:
+        host: mynginx
+        subset: mynginx-v1
